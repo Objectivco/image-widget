@@ -1,6 +1,6 @@
 <?php
 /*
-Plugin Name: Image Widget
+Plugin Name: Image Widget with Modal
 Plugin URI: http://wordpress.org/plugins/image-widget/
 Description: A simple image widget that uses the native WordPress media manager to add image widgets to your site. <strong><a href="http://m.tri.be/19my">Image Widget Plus</a> - Multiple images, slider and more.</strong>
 Author: Modern Tribe, Inc.
@@ -53,6 +53,8 @@ class Tribe_Image_Widget extends WP_Widget {
 		// fire admin_setup if we are in the customizer
 		add_action( 'admin_enqueue_scripts', array( $this, 'maybe_admin_setup' ) );
 
+		add_action( 'wp_enqueue_scripts', array( $this, 'client_setup' ) );
+
 		add_action( 'plugin_row_meta', array( $this, 'plugin_row_meta' ), 10, 2 );
 
 		if ( ! defined( 'I_HAVE_SUPPORTED_THE_IMAGE_WIDGET' ) )
@@ -96,6 +98,10 @@ class Tribe_Image_Widget extends WP_Widget {
 		}
 
 		$this->admin_setup();
+	}
+
+	public function client_setup() {
+		wp_enqueue_script( 'tribe-image-widget-client', plugins_url( 'resources/js/image-widget-client.js', __FILE__ ), array( 'jquery' ), self::VERSION );
 	}
 
 	/**
@@ -263,6 +269,8 @@ class Tribe_Image_Widget extends WP_Widget {
 				}
 			}
 			$output .= '>';
+		} else {
+			$output = '<a href="' . $instance['imageurl'] . '" class="image-widget-modal">';
 		}
 
 		$size = $this->get_image_size( $instance );
@@ -347,6 +355,8 @@ class Tribe_Image_Widget extends WP_Widget {
 		}
 
 		if ( $include_link && ! empty( $instance['link'] ) ) {
+			$output .= '</a>';
+		} else {
 			$output .= '</a>';
 		}
 
@@ -439,9 +449,9 @@ class Tribe_Image_Widget extends WP_Widget {
 	 * Display a thank you nag when the plugin has been upgraded.
 	 */
 	public function post_upgrade_nag() {
-		
-		if ( 
-			! current_user_can( 'install_plugins' ) 
+
+		if (
+			! current_user_can( 'install_plugins' )
 			|| class_exists( 'Tribe__Image__Plus__Main' )
 		) {
 			return;
